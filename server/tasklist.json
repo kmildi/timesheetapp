@@ -1,0 +1,46 @@
+{
+  "tasks": [
+    {
+      "name": "Walking the dog",
+      "history": [
+        {
+          "date": "2022-11-13",
+          "hours": "1"
+        },
+        {
+          "date": "2022-12-19",
+          "hours": "2"
+        },
+        {
+          "date": "2022-12-20",
+          "hours": "1.5"
+        }
+      ]
+    },
+    {
+      "name": "Coding",
+      "history": [
+        {
+          "date": "2022-12-17",
+          "hours": "6.5"
+        },
+        {
+          "date": "2022-12-18",
+          "hours": "11"
+        },
+        {
+          "date": "2022-12-19",
+          "hours": "2.5"
+        },
+        {
+          "date": "2022-12-20",
+          "hours": "2.5"
+        }
+      ]
+    },
+    {
+      "name": "Doing the dishes",
+      "history": []
+    }
+  ]
+}
