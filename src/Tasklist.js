@@ -5,7 +5,7 @@ class History extends React.Component {
     super(props);
     this.state = {
       hours: 0,
-      date: new Date(),
+      date: new Date().toISOString().slice(0, 10),
     }
     this.saveHistory = this.saveHistory.bind(this);
     this.setHours = this.setHours.bind(this);
@@ -17,20 +17,20 @@ class History extends React.Component {
   }
 
   setDate(value) {
-    this.setState({ date: new Date(value) });
+    this.setState({ date: value });
   }
 
   saveHistory(event) {
     event.preventDefault();
     this.props.saveHistory({date: this.state.date, hours: this.state.hours});
-    this.setState({ hours: 0, date: new Date() });
+    this.setState({ hours: 0, date: new Date().toISOString().slice(0, 10) });
   }
 
   render() {
     const records = this.props.history.map((elem, index) => {
       return (
         <li key={index}>
-          dátum: {elem.date.toDateString()}, Óraszám: {elem.hours} 
+          dátum: {elem.date}, Óraszám: {elem.hours} 
           <button onClick={() => this.props.deleteRecord(index)}>delete</button>
         </li>
       );
@@ -51,7 +51,7 @@ class History extends React.Component {
           <input 
             type="date" 
             onChange={(e) => this.setDate(e.target.value)}
-            value={this.state.date.toISOString().slice(0, 10)}></input>
+            value={this.state.date}></input>
           <input type="submit" />
         </form>
       </div> 
@@ -70,6 +70,10 @@ class Task extends React.Component {
     this.deleteRecord = this.deleteRecord.bind(this);
   }
 
+  componentDidMount() {
+    this.setState({ history: this.props.task.history });
+  }
+
   calcTotal() {
     const history = this.state.history;
     let total = 0;
@@ -77,29 +81,45 @@ class Task extends React.Component {
     return total;
   }
 
-  saveHistory(record) {
-    const history = this.state.history.slice();
-    this.setState({
-      history: history.concat([
-          record
-      ]),
+  saveHistoryToServer(history, taskId) {
+    fetch("/history", {
+      method: 'POST',
+      body: JSON.stringify({
+        taskId,
+        history
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      }
     })
+    .then((response) => response.json())
+    .then((res) => { 
+      this.setState({
+        history,
+      });
+      console.log(res);
+    })
+    .catch((err) => console.log(err));
   }
 
-  deleteRecord(index) {
+  saveHistory(record, taskId = this.props.id) {
+    const history = this.state.history.slice();
+    history.push(record);
+    this.saveHistoryToServer(history, taskId);
+  }
+
+  deleteRecord(index, taskId = this.props.id) {
     const history = this.state.history.slice();
     if (index === 0) history.shift();
-    else history.splice(index,index);
-    this.setState({
-      history
-    })
+    else history.splice(index, 1);
+    this.saveHistoryToServer(history, taskId);
   }
 
   render() {
     const taskTotal = this.calcTotal();
     return (
       <div>
-        <span className="taskName">{this.props.task.name} </span>
+        <h3 className="taskName">{this.props.task.name} </h3>
         <span className="total">Total: {taskTotal}</span>
         <History
           history={this.state.history} 
@@ -116,18 +136,27 @@ class Tasklist extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      tasksList: [
-        { name: 'some important task', hours: 0 },
-        { name: 'doing sg', hours: 0 },
-        { name: 'other things', hours: 0 },
-        { name: 'going somewhere', hours: 0 },
-        { name: 'getting sg', hours: 0 },
-      ],
+      tasksList: null,
       newTask: '',
     }
     this.textChangeHandler = this.textChangeHandler.bind(this);
     this.addTask = this.addTask.bind(this);
+    this.getList = this.getList.bind(this);
   }
+
+  getList() {
+    fetch("/tasklist")
+    .then((res) => res.json())
+    .then(
+      (result) => { this.setState({ tasksList: result.tasks }) }, 
+      (error) => { console.log(error) },
+    );
+  }
+
+  componentDidMount() {
+    this.getList();
+  }
+
   textChangeHandler(event){
     event.preventDefault();
     this.setState({ newTask: event.target.value });
@@ -135,34 +164,48 @@ class Tasklist extends React.Component {
 
   addTask(event) {
     const newTask = this.state.newTask;
-    console.log("newTask ", newTask);
-    const tasksList = this.state.tasksList.slice();
+    fetch("/tasklist", {
+      method: 'POST',
+      body: JSON.stringify({
+        name: newTask,
+        history: []
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      }
+    })
+    .then((response) => response.json())
+    .then((res) => { 
+      this.getList();
+      console.log(res)
+    })
+    .catch((err) => console.log(err));
+
     this.setState({
-      tasksList: tasksList.concat([
-        { name: newTask, hours: 0 }
-      ]),
       newTask: '',
     })
   }
 
   render() {
-    const tasks = this.state.tasksList.map((elem, index) => {
+    const tasks = this.state.tasksList?.map((elem, index) => {
       return (
-        <li key={index}>
+        <div key={index}>
           <Task task={elem} id={index}/>
-        </li>
+        </div>
       )
     })
     return (
       <div>
-        <ul>{tasks}</ul>
-        <input
+        {tasks}
+        <div className="addInput">        
+          <input
           type="text"
           placeholder="Add a new task!"
           value={this.state.newTask}
           onChange={this.textChangeHandler}
-        />
-        <button onClick={this.addTask}>Add!</button>
+          />
+          <button onClick={this.addTask}>Add!</button>
+        </div>
       </div>
     )
   }
