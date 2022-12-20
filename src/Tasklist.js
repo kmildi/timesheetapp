@@ -29,17 +29,34 @@ class History extends React.Component {
   render() {
     const records = this.props.history.map((elem, index) => {
       return (
-        <li key={index}>
-          dátum: {elem.date}, Óraszám: {elem.hours} 
-          <button onClick={() => this.props.deleteRecord(index)}>delete</button>
-        </li>
+        <tr key={index}>
+          <td>{elem.date}</td>
+          <td>{elem.hours}</td>
+          <td><button onClick={() => this.props.deleteRecord(index)}>delete</button></td>
+        </tr>
       );
     });
     return (
-      <div>   
+      <div className="history">   
         {/* <h2 className="taskName">{this.props.task.name}</h2> */}
-        <ul>{records}</ul>
-        <form onSubmit={this.saveHistory}>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Hours</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {records}
+          </tbody>
+        </table>
+        <form className="newHoursForm" onSubmit={this.saveHistory}>
+          <input 
+            type="date" 
+            onChange={(e) => this.setDate(e.target.value)}
+            value={this.state.date}>
+          </input>
           <input 
             type="number" 
             step="0.5" 
@@ -48,10 +65,6 @@ class History extends React.Component {
             value={this.state.hours}
             onChange={(e) => this.setHours(e.target.value)}>
           </input>
-          <input 
-            type="date" 
-            onChange={(e) => this.setDate(e.target.value)}
-            value={this.state.date}></input>
           <input type="submit" />
         </form>
       </div> 
@@ -118,8 +131,8 @@ class Task extends React.Component {
   render() {
     const taskTotal = this.calcTotal();
     return (
-      <div>
-        <h3 className="taskName">{this.props.task.name} </h3>
+      <div className="task">
+        <span className="taskName">{this.props.task.name} </span>
         <span className="total">Total: {taskTotal}</span>
         <History
           history={this.state.history} 
@@ -196,15 +209,20 @@ class Tasklist extends React.Component {
     })
     return (
       <div>
-        {tasks}
-        <div className="addInput">        
-          <input
-          type="text"
-          placeholder="Add a new task!"
-          value={this.state.newTask}
-          onChange={this.textChangeHandler}
-          />
-          <button onClick={this.addTask}>Add!</button>
+        <div>
+          <h2>My Timesheet</h2>
+        </div>
+        <div>
+          {tasks}
+          <div className="addInput">        
+            <input
+            type="text"
+            placeholder="Add a new task!"
+            value={this.state.newTask}
+            onChange={this.textChangeHandler}
+            />
+            <button onClick={this.addTask}>Add!</button>
+          </div>
         </div>
       </div>
     )

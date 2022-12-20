@@ -2,6 +2,29 @@
   padding: 20px;
 }
 
+.task {
+  border: 2px solid rgb(77, 150, 126);
+  border-radius: 5px;
+  background-color: rgb(160, 204, 189);
+  margin: 5px;
+  padding: 10px;
+}
+
+.taskName {
+  padding-left: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.history {
+  background-color: rgb(228, 250, 243);
+}
+
+td, th {
+  text-align: center;
+  width: 110px;
+}
+
 .addInput {
   padding-top: 30px;
 }
